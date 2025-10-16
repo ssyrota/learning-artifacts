@@ -15,7 +15,9 @@
 
 *Data warehouse -* OLAP database with data from business, has SQL interface
 
-*Data lake* - centralized data repository that holds copy of any data which may be useful for analytics to perform any operations, like feature engineering using python
+*Data lake* - centralized data repository that holds copy of any data which may be useful for analytics to perform any operations, like feature engineering using python. 
+
+Often data warehouses can store aggregated(some data dropped) - for data scientists the messy data is better than lost. That's why data lakes should store all data without managing schema tightly. Data stored "just in case somebody would need it". Mess in schema is tolerated to make life of developers less painful.
 
 Systems of record and derived data
 
