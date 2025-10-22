@@ -60,9 +60,6 @@ Example DBs: Neo4j, Memgraph, KùzuDB
 Cypher, SPARQL, Datalog, and GraphQL, Gremlin
 
 
-**CQRS and event sourcing**
-
-
 [TODO]
 - How impedance mismatch is solved and what we really need, raw-query, query builders or ORM(https://en.wikipedia.org/wiki/Object%E2%80%93relational_impedance_mismatch)
 - Why update table is hurting operation

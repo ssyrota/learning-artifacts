@@ -1,0 +1,1 @@
+**CQRS and event sourcing**
