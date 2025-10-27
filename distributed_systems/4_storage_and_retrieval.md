@@ -36,3 +36,50 @@ To make an insert - the seek and rewrite is needed.
 Deleting keys may be complex due to requiring merging pages.
 Algorithm ensures that B-Tree is balanced, which means that for N items, the search would always be O(log *n*)
 
+**Analytics**
+
+Components for data warehouse:
+1. Query engine
+2. Storage format
+3. Table format(ability to update/delete)
+4. Data catalog
+
+Analytics operations often run on column-oriented storage.
+Column-oriented - columns stored separately in block-files to reduce amount of extra work for reading/decoding/parsing.
+
+Rows can be stored in sorted order if specified at table creation(like in starrocks)
+
+**Multidimensional and full-text indexes**
+
+Concatenated index combines several fields into one key. So it's not possible to efficiently query like this:
+```
+
+```
+```sql
+SELECT * FROM restaurants WHERE latitude  > 51.4946 AND latitude  < 51.5079
+                            AND longitude > -0.1162 AND longitude < -0.1004;
+```
+
+To make geo query we need a multidimensional index of latitude + longitude.
+
+One option to do this for geo - translate location into single number using a **space-filling curve**.
+More commonly used R-trees(PostGIS using Generalized Search Tree indexing facility or GiST index), Bkd-trees.
+
+Inverted index - key-value structure where the key is term, and the value is list of IDs of all the documents contain the term.
+
+Indexes for vector query:
+- flat indexes - vectore value in index
+- Inverted file indexes - with centroids
+- Hierarchical Navigable Small World(HNSW)
+
+> As an application developer, if you’re armed with this knowledge about the internals of storage engines, you are in a much better position to know which tool is best suited for your particular application. If you need to adjust a database’s tuning parameters, this understanding allows you to imagine what effect a higher or a lower value may have.
+Although this chapter couldn’t make you an expert in tuning any one particular storage engine, it has hopefully equipped you with enough vocabulary and ideas that you can make sense of the documentation for the database of your choice.
+
+TODO:
+- vector indexes and databases
+- vectorized query
+- db for AI
+- different index types in postgres
+- geo
+- time-series
+- gpu in analytics?
