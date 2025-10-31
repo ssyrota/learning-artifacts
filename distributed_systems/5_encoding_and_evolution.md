@@ -27,7 +27,7 @@ One advantage of Avro’s approach, compared to Protocol Buffers, is that the sc
 Modes of dataflow:
 - Via databases
 - Service calls
-- Worjflow engines
+- Workflow engines
 - Async messages
 
 
