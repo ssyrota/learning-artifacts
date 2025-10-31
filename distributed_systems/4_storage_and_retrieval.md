@@ -26,6 +26,13 @@ Compaction can be performed in two ways:
 2. Compact by key to make segments with key ranges
 
 **B-Tree**
+It's self balanced tree with all leaf nodes at one level property.
+
+Must have min degree(root node is exception).
+When node is too big - get median value and promote to upper level.
+If the node is too small - get separator key from parent and place the sinling key as separator.
+If we have sibling at low - take separator and merge with sibling.
+When deleting a separator - take from the lower level. 
 
 Break the database into fixed-size blocks(8KiB for postgresql, 16 for mysql).
 
