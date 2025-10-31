@@ -31,6 +31,18 @@ Modes of dataflow:
 - Async messages
 
 
+**gRPC**
+Universal RPC framework, uses protobuf as serialization format and interface definition language.
+
+- Uses HTTP/2
+
+**REST**
+
+**gRPC vs REST**
+
+
 TODO:
 - idempontency in requests
 - rpc and rest in web
+- HTTP/1/2/3
+
