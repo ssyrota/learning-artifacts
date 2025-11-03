@@ -20,12 +20,20 @@ Distributed databases like ScyllaDB provide light-weight transactions for single
 
 ## Weak transaction isolation
 
+Weak isolation means that transaction will have isolation if specific cases of events intersection(events are writes and reads of one or many records from different transactions).
+
 ### Anomalies
 
+*Dirty read* - one transaction reads resulted update of another NOT committted transaction.
+
+*Dirty write* - 
 
 ### Isolation levels
-Read committed isolation - 
 
+*Read committed isolation*:
+1. When reading from the database, transaction will see only committed data(no dirty reads)
+2. When writing to the database, transaction will only overwrite data that has been committed(no dirty writes)
+However, *read committed* does not prevent race condition on read-write counters.(Picture read_write_counters.png)
 
 > Flexcoin collapsed because of weak isolation bug - two transactions made SELECT balance as first statement
 and then update it, in result - due to isolation level, balance get negative.
