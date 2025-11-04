@@ -26,14 +26,41 @@ Weak isolation means that transaction will have isolation if specific cases of e
 
 *Dirty read* - one transaction reads resulted update of another NOT committted transaction.
 
-*Dirty write* - 
+*Dirty write*:
+Two transactions A and B can make two writes to different tables at the same id W1(first table) and W2(second table).
+
+Dirty write is situation of events:
+AW1
+BW1
+BW2(and commit)
+AW2(and commit)
+
+Resulting records:
+BW1
+AW2
+
+The update AW1 is lost.
+
+
+*Read skew* - ![read skew](./read_skew.png "Read skew")
 
 ### Isolation levels
 
-*Read committed isolation*:
+#### *Read committed isolation*:
 1. When reading from the database, transaction will see only committed data(no dirty reads)
 2. When writing to the database, transaction will only overwrite data that has been committed(no dirty writes)
 However, *read committed* does not prevent race condition on read-write counters.(Picture read_write_counters.png)
+
+Preventing dirty writes often implemented as row-based locks. Only one transaction can acquire lock at a time(which may cause deadlock or error).
+Dirty reads is prevented by using latest committed version of row(which doesn't have lock).
+
+When isolation only prevents dirty-writes it's called *Read uncommitted isolation*
+
+
+#### *Snapshot isolation and Repeatable Read*
+
+
+
 
 > Flexcoin collapsed because of weak isolation bug - two transactions made SELECT balance as first statement
 and then update it, in result - due to isolation level, balance get negative.
