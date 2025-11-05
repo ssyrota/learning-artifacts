@@ -42,7 +42,10 @@ AW2
 The update AW1 is lost.
 
 
-*Read skew* - ![read skew](./read_skew.png "Read skew")
+*Read skew*(or read timing anomaly) - ![read skew](./read_skew.png "Read skew")
+In the process of transaction record, which it queries may have changed and committed from another transaction, which is not okay if several records have connection.
+
+This skew is critical for making backups, analytic queries and integrity checks, transaction correctness.
 
 ### Isolation levels
 
@@ -57,8 +60,40 @@ Dirty reads is prevented by using latest committed version of row(which doesn't 
 When isolation only prevents dirty-writes it's called *Read uncommitted isolation*
 
 
-#### *Snapshot isolation and Repeatable Read*
+#### *Snapshot isolation or Repeatable Read(named by postgres)*
 
+Goal is to prevent *read skew*. Idea is that transaction reads from *consistent snapshot* of database.
+
+**MVCC(multi-version concurrency control) as implementation**
+Key principle - readers never block writers, and writers never block readers.
+
+To make it possible database need to keep several different committed versions of a row, because
+various in-progress transactions may need to see the state of database in a different point of time.
+
+In PostgreSQL:
+1. When transaction is started it receives txid(always increasing integer ID)
+2. When transaction writes anything to the db, the data it writes tagged with the transaction ID of the writer.
+3. Each row has inserted_by_txid and deleted_by_txid(initially empty). 
+
+Postgres storage is append-only so old rows deleted with autovacuum process when it's certain that no transaction
+can any longer access the deleted or overwritten data.
+
+> What if tx 1 started and tx 2 started too, and tx2 reads data and then tx1 updates data and tx2 reads data again. 
+What happens then?
+
+Well, to prevent this there are visibility rules for transactions:
+1. At the beginning of current transaction - it receives list of currently active transactions and ignores data written by them
+2. Also transaction ignores all data with txid bigger than it's own
+3. The rollbacked transactions data ignored too
+4. Any other data is visible for transaction
+
+
+#### **Preventing lost updates**
+
+The problem with counters example is the "read and modify" approach, many databases support atomic operations.
+Another approach is to exclusively lock object before "read and modify" approach, so any other transaction cannot infer.
+
+Another cool way is when database itself provides **automatically detecting lost updates** has occurred and aborts the offending transaction. Postgres does it with repeatable read. MySQL doesn't detect lost updates in repeatable reads.
 
 
 
