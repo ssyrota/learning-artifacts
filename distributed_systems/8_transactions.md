@@ -65,6 +65,7 @@ When isolation only prevents dirty-writes it's called *Read uncommitted isolatio
 Goal is to prevent *read skew*. Idea is that transaction reads from *consistent snapshot* of database.
 
 **MVCC(multi-version concurrency control) as implementation**
+
 Key principle - readers never block writers, and writers never block readers.
 
 To make it possible database need to keep several different committed versions of a row, because
@@ -95,8 +96,89 @@ Another approach is to exclusively lock object before "read and modify" approach
 
 Another cool way is when database itself provides **automatically detecting lost updates** has occurred and aborts the offending transaction. Postgres does it with repeatable read. MySQL doesn't detect lost updates in repeatable reads.
 
+Databases without transactions provide "compare and set" conditional writes, which is atomic "compare and swap"
+The approach of "compare and swap" with version checking called *optimistic locking*, PostgreSQL uses *pessimistic locking*, which actually locks the record
 
+#### **Write skew and phantoms**
+![write skew](./write_skew.png)
 
+While lost updates is about non-commutative update operations on one record. Write skew is when transactions read the same objects and then update some of those objects(different transactions may update different objects).
+
+When transactions update one object - possible anomalies are: *dirty write or lost update*.
+
+Write skew doesn't automatically detected in Postgres repeatable read.
+
+Possible solution is to lock all rows returned by query:
+```sql
+BEGIN TRANSACTION;
+
+SELECT * FROM doctors
+  WHERE on_call = true
+  AND shift_id = 1234 FOR UPDATE;
+
+UPDATE doctors
+  SET on_call = false
+  WHERE name = 'Aaliyah'
+  AND shift_id = 1234;
+
+COMMIT;
+```
+
+`FOR SHARE` may be used to make a read-lock.
+
+##### Phantoms causing write skew
+
+1. A `SELECT` query checks whether some requirement is satisfied
+2. Depending on result application decides to continue
+3. It makes write and commits, the effect of write changes the precondition. Another concurrent transaction would not see committed write and decision step would be skewed.
+
+Locking rows from `SELECT` statement may help, **however** the absence of record cannot be locked. 
+This effect, where a write in one transaction changes the result of a search query in another transaction, is called a phantom.
+
+Possible solution is to create a table with artificial objects to attach locks(in a booking case - table with time slots), when transactions would have **materializing conflict**.
+
+<br/>
+
+#### Serializability
+
+It's great, but not anybody uses it. Implementations:
+
+**Actual serial execution**
+
+Redis, VoltDB, Datomic uses this approach.
+
+Faster than may seem, because often data is cached in memory.
+
+Systems with single-threaded serial transaction processing don’t allow interactive multi-statement transactions because of dramatically large networking latency. 
+
+Instead, the application must either limit itself to transactions containing a single statement, or submit the entire transaction code to the database ahead of time, as a *stored procedure*.
+
+<br/>
+
+**Two-phase locking(2PL, not confuse with two-phase commit)**
+
+Used for serializable isolation level in MySQL, SQL Server
+
+Several transactions are allowed to concurrently read the same object as long as nobody is writing to it. When anyone wants to write an object, exclusive lock is required:
+1. If transaction A reads object and transaction B want to update it, transaction B must wait until A completed.
+2. If transaction A writes an object and transaction B want to read the object, B must wait until A is completed.
+
+Each object has *multi-reader single-writer lock*.
+
+After a transaction has acquired the lock, it must continue to hold the lock until the end of the transaction
+
+Downside of having so much locks - bad performance and common deadlocks.
+
+*Prevented anomalies with two-phase locks:*
+1. Dirty write/read
+2. Write skew
+3. Read skew
+4. Lost updates
+5. Write skew with phantoms
+
+<br/>
+
+### Real world example
 > Flexcoin collapsed because of weak isolation bug - two transactions made SELECT balance as first statement
 and then update it, in result - due to isolation level, balance get negative.
 
@@ -117,9 +199,5 @@ concurrently.
 
 
 TODO:
-- what types of transaction guarantees exist
-- which implemented in popular DBS like pg/mongo/scylla/olap?
-- how it stored in disk
 - how to make distributed transaction - is it possible, if yes with which conditions?
 - what is the future of transactions or it's just exist and doesn't need improvements?
-- what is MVCC?
