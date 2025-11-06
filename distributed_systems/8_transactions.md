@@ -43,7 +43,7 @@ The update AW1 is lost.
 
 
 *Read skew*(or read timing anomaly) - ![read skew](./read_skew.png "Read skew")
-In the process of transaction record, which it queries may have changed and committed from another transaction, which is not okay if several records have connection.
+In the process of transaction **one record**, which it queries may have changed and committed from another transaction, which is not okay if several records have connection.
 
 This skew is critical for making backups, analytic queries and integrity checks, transaction correctness.
 
@@ -106,7 +106,7 @@ While lost updates is about non-commutative update operations on one record. Wri
 
 When transactions update one object - possible anomalies are: *dirty write or lost update*.
 
-Write skew doesn't automatically detected in Postgres repeatable read.
+Write skew doesn't automatically detected in Postgres repeatable read. It may be prevented by using constraints.
 
 Possible solution is to lock all rows returned by query:
 ```sql
@@ -126,11 +126,11 @@ COMMIT;
 
 `FOR SHARE` may be used to make a read-lock.
 
-##### Phantoms causing write skew
-
 1. A `SELECT` query checks whether some requirement is satisfied
 2. Depending on result application decides to continue
 3. It makes write and commits, the effect of write changes the precondition. Another concurrent transaction would not see committed write and decision step would be skewed.
+
+##### Phantoms causing write skew
 
 Locking rows from `SELECT` statement may help, **however** the absence of record cannot be locked. 
 This effect, where a write in one transaction changes the result of a search query in another transaction, is called a phantom.
@@ -165,18 +165,42 @@ Several transactions are allowed to concurrently read the same object as long as
 
 Each object has *multi-reader single-writer lock*.
 
-After a transaction has acquired the lock, it must continue to hold the lock until the end of the transaction
+> **KEY NOTE**: After a transaction has acquired the lock, it must continue to hold the lock until the end of the transaction. For example read skew becomes impossible
 
 Downside of having so much locks - bad performance and common deadlocks.
 
 *Prevented anomalies with two-phase locks:*
-1. Dirty write/read
-2. Write skew
-3. Read skew
-4. Lost updates
-5. Write skew with phantoms
+- Dirty write/read
+- Read skew
+- Lost updates
+- Write skew
+
+To prevent phantoms there are **predicate locks** or **index-range locks**.
 
 <br/>
+
+**Serializable Snapshot Isolation(SSI)**
+
+Used in PostgreSQL, CockroachDB.
+
+**Key idea** is preserve snapshot isolation and add an algorithm of detection of the write skew and phantoms, with optimistic locking, algorithm evaluated at the commit-time. Algorithm remembers which key ranges was read and if there are conflict between two transactions, latest is just aborted.
+
+
+SSI is based on snapshot isolation—that is, all reads within a transaction are made from a consistent snapshot of the database.
+
+On top of snapshot isolation, SSI adds an algorithm for detecting serialization conflicts among reads and writes, and determining which transactions to abort.
+
+![ssi problem](./ssi_problem.png)
+
+Transaction 43 reads snapshot version and ignores T42 result.
+
+![ssi 2](./ssi_2.png)
+<br/>
+
+**Performance**
+
+> If the database keeps track of each transaction’s activity in great detail, it can be precise about which transactions need to abort, but the bookkeeping overhead can become significant. Less detailed tracking is faster, but may lead to more transactions being aborted than strictly necessary.
+
 
 ### Real world example
 > Flexcoin collapsed because of weak isolation bug - two transactions made SELECT balance as first statement
