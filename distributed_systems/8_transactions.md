@@ -1,3 +1,7 @@
+## Transaction
+
+Transactions are an abstraction layer that allows an application to pretend that certain concurrency problems and certain kinds of hardware and software faults don’t exist
+
 ## ACID
 
 Atomicity(specifically *abortability*) - if the writes are grouped together intro an atomic transaction,
@@ -201,7 +205,6 @@ Transaction 43 reads snapshot version and ignores T42 result.
 
 > If the database keeps track of each transaction’s activity in great detail, it can be precise about which transactions need to abort, but the bookkeeping overhead can become significant. Less detailed tracking is faster, but may lead to more transactions being aborted than strictly necessary.
 
-
 ### Real world example
 > Flexcoin collapsed because of weak isolation bug - two transactions made SELECT balance as first statement
 and then update it, in result - due to isolation level, balance get negative.
@@ -225,3 +228,19 @@ concurrently.
 TODO:
 - how to make distributed transaction - is it possible, if yes with which conditions?
 - what is the future of transactions or it's just exist and doesn't need improvements?
+
+
+## Distributed transactions
+
+When a transaction involves multiple database nodes, it may commit on some and fail on others.
+It's an *atomic commitment problem*.
+
+2PC involves new entity - coordinator or *transactions manager*. Nodes are *participants* of transaction.
+1. When application want to commit transaction coordinator sends *prepare* request  to each of the nodes.
+2.1 If all participants respond with "yes", coordinator sends *commit* request
+2.2 If any participant responds with "no", coordinator sends *abort* request to all nodes 
+
+Before the moment participant responds "yes" to prepare request it checks constraints/conflicts/flushes to disk, just ensures that if or when *commit* request would arrive, participant would make commit fast.
+However when coordinator fails, entire transaction may fail and state may become corrupted.
+
+There are need of making distributed heterogeneous transactions, for example to implement *exactly once semantics* in message brokers
