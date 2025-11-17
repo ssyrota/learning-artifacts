@@ -1,0 +1,1 @@
+Message queue and pub-sub pattern are not the same, why?
