@@ -16,8 +16,14 @@ let abs (x:float) = if x < 0. then -.x else x
 let rec _newton_sqrt (y:float) (x:float) = 
   if abs((x -. y *. y)) < (x *. 0.001) then y 
   else _newton_sqrt (0.5 *. (y +. x/.y)) x
+
+
+let rec _newton_cube_root (y:float) (x:float) = 
+  let _ = Printf.printf "diff = %f\nepsilon = %f\n" (abs(x -. ((y *. y) *. y))) (x /. 1000.) in
+    if abs(x -. ((y *. y) *. y)) < (x /. 1000.) then y 
+      else _newton_cube_root ((x /. (y *.y) +. 2. *. y) /. 3.) x
+
   
 
 let () = 
-  let result = _newton_sqrt 1. 0.04 in
-  Printf.printf "sqrt = %f\n" result
+  Printf.printf "cube root = %f\n" (_newton_cube_root 1. 0.008)
