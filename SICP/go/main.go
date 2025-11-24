@@ -4,6 +4,7 @@ import "fmt"
 
 func main() {
 	// expressionsEvaluation()
+	// a:= if true { 1 } else { 2 }
 }
 
 func expressionsEvaluation() {
