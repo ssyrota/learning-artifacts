@@ -1,0 +1,14 @@
+version: "3.9"
+services:
+  ocaml-dev:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    command: ["sleep", "100h" ]
+    volumes:
+      - .:/app
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '2'
