@@ -15,7 +15,7 @@ let abs (x:float) = if x < 0. then -.x else x
 
 (* sqrt actually depends on `abs` free variable, while having `bound variables` y and x *)
 let rec _newton_sqrt (y:float) (x:float) = 
-  let good_enough = () => abs((x -. y *. y)) < (x *. 0.001) in
+  let good_enough = abs((x -. y *. y)) < (x *. 0.001) in
     if good_enough then y 
     else _newton_sqrt (0.5 *. (y +. x/.y)) x
 
