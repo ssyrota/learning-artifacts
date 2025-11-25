@@ -15,6 +15,7 @@ let abs (x:float) = if x < 0. then -.x else x
 
 (* sqrt actually depends on `abs` free variable, while having `bound variables` y and x *)
 let rec newton_sqrt (y:float) (x:float) = 
+  (* ocaml supports block structure to manage lexical scope *)
   let good_enough = abs((x -. y *. y)) < (x *. 0.001) in
     if good_enough then y 
     else newton_sqrt (0.5 *. (y +. x/.y)) x
@@ -24,6 +25,27 @@ let rec newton_cube_root (y:float) (x:float) =
   let _ = Printf.printf "diff = %f\nepsilon = %f\n" (abs(x -. ((y *. y) *. y))) (x /. 1000.) in
     if abs(x -. ((y *. y) *. y)) < (x /. 1000.) then y 
       else newton_cube_root ((x /. (y *.y) +. 2. *. y) /. 3.) x
+
+
+(* 
+  linear recursive process, the execution requires maintaining stack for each nested function call
+  The expansion occurs as the process builds up a chain of
+  deferred operations (in this case, a chain of multiplications)
+*)
+let rec factorial_r n = if n=1 then 1 else n*factorial_r(n-1)
+
+(* 
+linear iterable process, the execution shouldn't maintain stack
+In general, an iterative process is one whose state can be summarized by a fixed number of state variables,
+together with a fixed rule that describes how the state variables should be updated as the process
+moves from state to state 
+and an (optional) end test that specifies conditions under which the process should terminate
+*)
+let factorial_i n = 
+  let rec factorial_iter product counter max = 
+      if counter > max then product else factorial_iter (counter*product) (counter+1) max
+    in
+  factorial_iter 1 1 n
 
 let () = 
   Printf.printf "cube root = %f\n" (newton_cube_root 1. 0.008)
