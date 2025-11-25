@@ -39,6 +39,8 @@ linear iterative process
 The variables provide a complete description of the state of the process at any point.
 If we stop at some point and list variables, we can continue later.
 If we stop recursive process - there is some "hidden" info of deferred operations, which cannot be dumped.
+
+Ocaml should execute an iterative process in constant space, this property is called tail-recursive.
 *)
 let factorial_i n = 
   let rec factorial_iter product counter max = 
@@ -48,3 +50,31 @@ let factorial_i n =
 
 let () = 
   Printf.printf "cube root = %f\n" (newton_cube_root 1. 0.008)
+
+
+(*
+recursion task
+1. 2y
+2. just 2^y
+---
+2 * (A 1 (n - 1))
+
+(A 1 (n - 1)) = 2 * (A 1 (n - 2))
+...
+(A 1 (n - M)) = 2 * (A 1 (n - M+1))
+until y = 0
+
+3. (A 2 n)
+
+A 1 (A 2 (n -1))
+
+2^y, where y = A 2 (n - 1)
+
+if y = 2
+y = A 2 1
+2^(2)
+
+if y = 3 
+2^y, where y = A 2 2
+looks like recursive ^
+*)
