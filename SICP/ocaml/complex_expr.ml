@@ -35,11 +35,10 @@ let rec newton_cube_root (y:float) (x:float) =
 let rec factorial_r n = if n=1 then 1 else n*factorial_r(n-1)
 
 (* 
-linear iterable process, the execution shouldn't maintain stack
-In general, an iterative process is one whose state can be summarized by a fixed number of state variables,
-together with a fixed rule that describes how the state variables should be updated as the process
-moves from state to state 
-and an (optional) end test that specifies conditions under which the process should terminate
+linear iterative process
+The variables provide a complete description of the state of the process at any point.
+If we stop at some point and list variables, we can continue later.
+If we stop recursive process - there is some "hidden" info of deferred operations, which cannot be dumped.
 *)
 let factorial_i n = 
   let rec factorial_iter product counter max = 
