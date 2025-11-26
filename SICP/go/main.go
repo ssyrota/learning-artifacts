@@ -6,7 +6,7 @@ func main() {
 	// expressionsEvaluation()
 	// a:= if true { 1 } else { 2 }
 	conditionalsEvaluation()
-
+	pascalTriangle(10)
 }
 
 func conditionalsEvaluation() {
